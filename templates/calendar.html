@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Calendar — TaskFlow</title>
+
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+{% set theme_class = 'calendar-theme-light' if user_settings and user_settings['theme'] == 'light' else 'calendar-theme-dark' %}
+
+<body class="calendar-page {{ theme_class }}">
+
+    <div class="calendar-layout">
+
+
+        <!-- =====================================================
+             TOP BAR
+             ===================================================== -->
+
+        <header class="calendar-top">
+
+            <a
+                href="{{ url_for('home') }}"
+                class="calendar-brand"
+            >
+
+                <span class="brand-symbol">
+                    TF
+                </span>
+
+                <span class="brand-name">
+                    TaskFlow
+                </span>
+
+            </a>
+
+
+            <div class="calendar-top-center">
+
+                <span class="top-label">
+                    PLANNER
+                </span>
+
+                <span class="top-divider"></span>
+
+                <span>
+                    {{ current_user.username }}
+                </span>
+
+            </div>
+
+
+            <nav class="calendar-nav">
+
+                <a href="{{ url_for('home') }}">
+                    Tasks
+                </a>
+
+                <a
+                    href="{{ url_for('calendar') }}"
+                    class="active"
+                >
+                    Calendar
+                </a>
+
+                <a href="{{ url_for('profile') }}">
+                    Profile
+                </a>
+
+                <a
+                    href="{{ url_for('logout') }}"
+                    class="logout-link"
+                >
+                    Logout
+                </a>
+
+            </nav>
+
+        </header>
+
+
+        <!-- =====================================================
+             HERO
+             ===================================================== -->
+
+        <section class="calendar-hero">
+
+
+            <a
+                href="{{ url_for('home') }}"
+                class="calendar-back-button"
+            >
+                ← Back to Dashboard
+            </a>
+
+
+            <div class="calendar-hero-left">
+
+                <span class="hero-kicker">
+                    MONTHLY OVERVIEW
+                </span>
+
+
+                <div class="month-title-row">
+
+                    <h1>
+                        {{ month_name }}
+                    </h1>
+
+                    <span class="year-number">
+                        {{ year }}
+                    </span>
+
+                </div>
+
+
+                <p>
+                    Your deadlines, priorities and planned work.
+                </p>
+
+            </div>
+
+
+            <div class="calendar-controls">
+
+                <a
+                    href="{{ url_for('calendar', month=previous_month, year=previous_year) }}"
+                    class="nav-arrow"
+                    aria-label="Previous month"
+                >
+                    ←
+                </a>
+
+
+                <a
+                    href="{{ url_for('calendar') }}"
+                    class="today-button"
+                >
+                    Today
+                </a>
+
+
+                <a
+                    href="{{ url_for('calendar', month=next_month, year=next_year) }}"
+                    class="nav-arrow"
+                    aria-label="Next month"
+                >
+                    →
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             CALENDAR
+             ===================================================== -->
+
+        <main class="calendar-main">
+
+
+            <!-- WEEK LABELS -->
+
+            <div class="weekday-row">
+
+                {% for weekday in weekday_names %}
+
+                    <span>
+                        {{ weekday[:3]|upper }}
+                    </span>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- DAYS -->
+
+            <div class="month-grid">
+
+                {% for day in calendar_days %}
+
+
+                    {% if day is none %}
+
+                        <div class="day-slot empty-day"></div>
+
+
+                    {% else %}
+
+                        {% set day_classes = 'day-slot' %}
+                        {% if day.date_string == today %}{% set day_classes = day_classes ~ ' current-day' %}{% endif %}
+                        {% if day.date.weekday() >= 5 %}{% set day_classes = day_classes ~ ' weekend-day' %}{% endif %}
+
+                        <div class="{{ day_classes }}" data-date="{{ day.date_string }}">
+
+
+                            <!-- DATE -->
+
+                            <div class="date-header">
+
+                                <span class="date-number">
+                                    {{ day.day }}
+                                </span>
+
+
+                                {% if day.date_string == today %}
+
+                                    <span class="today-marker">
+                                        TODAY
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- TASKS -->
+
+                            <div class="task-stack">
+
+
+                                {% for todo in day.tasks[:4] %}
+
+                                    {% set task_classes = 'calendar-task ' ~ todo['priority'] %}
+                                    {% if todo['done'] %}{% set task_classes = task_classes ~ ' completed-task' %}{% endif %}
+                                    {% if day.date_string < today and not todo['done'] %}{% set task_classes = task_classes ~ ' overdue-task' %}{% endif %}
+
+                                    <div class="{{ task_classes }}">
+
+
+                                        <!-- EDIT TASK -->
+
+                                        <a
+                                            href="{{ url_for('edit_task', todo_id=todo['id'], from_calendar=1) }}"
+                                            class="calendar-task-link"
+                                            title="Edit {{ todo['task'] }}"
+                                        >
+
+                                            <span class="task-indicator"></span>
+
+
+                                            <span class="task-text">
+                                                {{ todo['task'] }}
+                                            </span>
+
+
+                                            {% if todo['done'] %}
+
+                                                <span class="task-done-icon">
+                                                    ✓
+                                                </span>
+
+                                            {% endif %}
+
+                                        </a>
+
+
+                                        <!-- COMPLETE / UNDO -->
+
+                                        <a
+                                            href="{{ url_for('complete_task', todo_id=todo['id'], from_calendar=1) }}"
+                                            class="calendar-complete-button"
+                                            title="{{ 'Undo completed task' if todo['done'] else 'Mark task as complete' }}"
+                                        >
+
+                                            {% if todo['done'] %}
+                                                ↩
+                                            {% else %}
+                                                ✓
+                                            {% endif %}
+
+                                        </a>
+
+                                    </div>
+
+                                {% endfor %}
+
+
+                                <!-- MORE TASKS -->
+
+                                {% if day.tasks|length > 4 %}
+
+                                    <button
+                                        type="button"
+                                        class="more-tasks"
+                                        data-date="{{ day.date_string }}"
+                                    >
+                                        +{{ day.tasks|length - 4 }} more
+                                    </button>
+
+                                {% endif %}
+
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+        </main>
+
+
+        <!-- =====================================================
+             FOOTER
+             ===================================================== -->
+
+        <footer class="calendar-footer">
+
+
+            <div class="legend">
+
+                <span class="legend-heading">
+                    PRIORITY
+                </span>
+
+
+                <span>
+
+                    <i class="legend-indicator high"></i>
+
+                    High
+
+                </span>
+
+
+                <span>
+
+                    <i class="legend-indicator medium"></i>
+
+                    Medium
+
+                </span>
+
+
+                <span>
+
+                    <i class="legend-indicator low"></i>
+
+                    Low
+
+                </span>
+
+
+                <span class="completed-label">
+                    ✓ Completed
+                </span>
+
+            </div>
+
+
+            <span class="calendar-footer-note">
+                Click a task to edit
+            </span>
+
+        </footer>
+
+    </div>
+
+
+    <!-- =========================================================
+         DAY TASK PANEL
+         ========================================================= -->
+
+    <div
+        id="dayTaskOverlay"
+        class="day-task-overlay"
+        onclick="closeDayTasks(event)"
+    >
+
+
+        <div
+            class="day-task-panel"
+            onclick="event.stopPropagation()"
+        >
+
+
+            <div class="day-task-panel-header">
+
+
+                <div>
+
+                    <span class="day-task-label">
+                        DAY TASKS
+                    </span>
+
+
+                    <h2 id="dayTaskTitle">
+                        Tasks
+                    </h2>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="day-task-close"
+                    onclick="closeDayTasks()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div
+                id="dayTaskList"
+                class="day-task-list"
+            ></div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         TASK DATA (read by the script below)
+         ========================================================= -->
+
+    <div id="calendar-data" data-tasks='{{ calendar_tasks|tojson }}' hidden></div>
+
+
+    <!-- =========================================================
+         DAY TASK PANEL JAVASCRIPT
+         ========================================================= -->
+
+    <script>
+
+        const calendarTasks = JSON.parse(
+            document.getElementById("calendar-data").dataset.tasks
+        );
+
+
+        function openDayTasks(dateString) {
+
+            const overlay = document.getElementById("dayTaskOverlay");
+
+            const list = document.getElementById("dayTaskList");
+
+            const title = document.getElementById("dayTaskTitle");
+
+
+            const tasks = calendarTasks[dateString] || [];
+
+
+            title.textContent = dateString;
+
+
+            list.innerHTML = "";
+
+
+            tasks.forEach(function(task) {
+
+                const taskRow = document.createElement("div");
+
+
+                taskRow.className =
+                    "day-task-row " +
+                    task.priority +
+                    (task.done ? " completed" : "");
+
+
+                taskRow.innerHTML = `
+
+                    <span class="day-task-indicator"></span>
+
+                    <a
+                        href="${task.editUrl}"
+                        class="day-task-name"
+                    >
+                        ${escapeHtml(task.task)}
+                    </a>
+
+                    <a
+                        href="${task.completeUrl}"
+                        class="day-task-action"
+                        title="${task.done ? "Undo task" : "Complete task"}"
+                    >
+                        ${task.done ? "↩" : "✓"}
+                    </a>
+
+                `;
+
+
+                list.appendChild(taskRow);
+
+            });
+
+
+            overlay.classList.add("open");
+
+            document.body.classList.add("day-panel-open");
+
+        }
+
+
+        function closeDayTasks(event) {
+
+            if (
+                event &&
+                event.target !== document.getElementById("dayTaskOverlay")
+            ) {
+                return;
+            }
+
+
+            document
+                .getElementById("dayTaskOverlay")
+                .classList.remove("open");
+
+
+            document.body.classList.remove("day-panel-open");
+
+        }
+
+
+        function escapeHtml(text) {
+
+            const div = document.createElement("div");
+
+            div.textContent = text;
+
+            return div.innerHTML;
+
+        }
+
+
+        document.querySelectorAll(".more-tasks").forEach(function(button) {
+
+            button.addEventListener("click", function() {
+
+                openDayTasks(button.dataset.date);
+
+            });
+
+        });
+
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (event.key === "Escape") {
+
+                    closeDayTasks();
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+</body>
+
+</html>

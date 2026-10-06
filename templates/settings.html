@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Settings — TaskFlow</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body class="tf-settings-page {% if user_settings and user_settings['theme'] == 'light' %}tf-theme-light{% else %}tf-theme-dark{% endif %}">
+
+    <!-- HEADER -->
+    <header class="tf-settings-header">
+
+        <a href="{{ url_for('home') }}" class="tf-settings-logo">
+            TASKFLOW
+        </a>
+
+        <nav class="tf-settings-nav">
+            <a href="{{ url_for('home') }}">Tasks</a>
+            <a href="{{ url_for('calendar') }}">Calendar</a>
+            <a href="{{ url_for('profile') }}">Profile</a>
+            <a href="{{ url_for('settings') }}" class="tf-settings-nav-active">
+                Settings
+            </a>
+        </nav>
+
+    </header>
+
+
+    <!-- PAGE -->
+    <main class="tf-settings-container">
+
+        <a href="{{ url_for('home') }}" class="tf-settings-back">
+            ← Back to Dashboard
+        </a>
+
+        <!-- FLASH -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="tf-settings-message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+
+        <!-- HERO -->
+        <section class="tf-settings-hero">
+
+            <div class="tf-settings-hero-text">
+
+                <div class="tf-settings-eyebrow">
+                    WORKSPACE SETTINGS
+                </div>
+
+                <h1>Settings</h1>
+
+                <p>
+                    Manage your TaskFlow preferences and account settings.
+                </p>
+
+            </div>
+
+
+            <div class="tf-settings-user">
+
+                <div class="tf-settings-avatar">
+                    {{ current_user.username[0]|upper }}
+                </div>
+
+                <div class="tf-settings-user-details">
+                    <strong>{{ current_user.username }}</strong>
+                    <span>{{ current_user.email }}</span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- CONTENT -->
+        <div class="tf-settings-main">
+
+
+            <!-- SIDEBAR -->
+            <aside class="tf-settings-sidebar">
+
+                <div class="tf-settings-sidebar-title">
+                    SETTINGS
+                </div>
+
+                <a href="#account">
+                    <span>01</span>
+                    Account
+                </a>
+
+                <a href="#appearance">
+                    <span>02</span>
+                    Appearance
+                </a>
+
+                <a href="#preferences">
+                    <span>03</span>
+                    Task Preferences
+                </a>
+
+                <a href="#about">
+                    <span>04</span>
+                    About
+                </a>
+
+            </aside>
+
+
+            <!-- RIGHT CONTENT -->
+            <div class="tf-settings-content">
+
+
+                <!-- ACCOUNT -->
+                <section
+                    id="account"
+                    class="tf-settings-section"
+                >
+
+                    <div class="tf-settings-section-title">
+
+                        <span>01</span>
+
+                        <div>
+                            <h2>Account</h2>
+                            <p>Your TaskFlow account information.</p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="tf-settings-rows">
+
+                        <div class="tf-settings-row">
+
+                            <div>
+                                <strong>Username</strong>
+                                <small>
+                                    Your TaskFlow display name.
+                                </small>
+                            </div>
+
+                            <b>
+                                {{ current_user.username }}
+                            </b>
+
+                        </div>
+
+
+                        <div class="tf-settings-row">
+
+                            <div>
+                                <strong>Email</strong>
+                                <small>
+                                    Your registered email address.
+                                </small>
+                            </div>
+
+                            <b>
+                                {{ current_user.email }}
+                            </b>
+
+                        </div>
+
+
+                        <div class="tf-settings-row">
+
+                            <div>
+                                <strong>Account status</strong>
+                                <small>
+                                    Current account state.
+                                </small>
+                            </div>
+
+                            <em>
+                                Active
+                            </em>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- SETTINGS FORM -->
+                <form
+                    method="POST"
+                    action="{{ url_for('settings') }}"
+                >
+
+
+                    <!-- APPEARANCE -->
+                    <section
+                        id="appearance"
+                        class="tf-settings-section"
+                    >
+
+                        <div class="tf-settings-section-title">
+
+                            <span>02</span>
+
+                            <div>
+                                <h2>Appearance</h2>
+                                <p>
+                                    Control how TaskFlow looks.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="tf-settings-rows">
+
+                            <div class="tf-settings-row">
+
+                                <div>
+                                    <strong>Theme</strong>
+                                    <small>
+                                        Choose your preferred interface theme.
+                                    </small>
+                                </div>
+
+                                <select name="theme">
+
+                                    <option
+                                        value="dark"
+                                        {% if user_settings["theme"] == "dark" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Dark
+                                    </option>
+
+                                    <option
+                                        value="light"
+                                        {% if user_settings["theme"] == "light" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Light
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- TASK PREFERENCES -->
+                    <section
+                        id="preferences"
+                        class="tf-settings-section"
+                    >
+
+                        <div class="tf-settings-section-title">
+
+                            <span>03</span>
+
+                            <div>
+                                <h2>Task Preferences</h2>
+                                <p>
+                                    Customize how your tasks behave.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="tf-settings-rows">
+
+
+                            <div class="tf-settings-row">
+
+                                <div>
+                                    <strong>Default priority</strong>
+                                    <small>
+                                        Priority used when creating a new task.
+                                    </small>
+                                </div>
+
+                                <select name="default_priority">
+
+                                    <option
+                                        value="low"
+                                        {% if user_settings["default_priority"] == "low" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Low
+                                    </option>
+
+                                    <option
+                                        value="medium"
+                                        {% if user_settings["default_priority"] == "medium" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Medium
+                                    </option>
+
+                                    <option
+                                        value="high"
+                                        {% if user_settings["default_priority"] == "high" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        High
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="tf-settings-row">
+
+                                <div>
+                                    <strong>Calendar week starts</strong>
+                                    <small>
+                                        Choose the first day of your calendar.
+                                    </small>
+                                </div>
+
+                                <select name="week_start">
+
+                                    <option
+                                        value="monday"
+                                        {% if user_settings["week_start"] == "monday" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Monday
+                                    </option>
+
+                                    <option
+                                        value="sunday"
+                                        {% if user_settings["week_start"] == "sunday" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Sunday
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- SAVE -->
+                        <div class="tf-settings-save">
+
+                            <span>
+                                Your preferences are saved to your account.
+                            </span>
+
+                            <button type="submit">
+                                Save Settings
+                            </button>
+
+                        </div>
+
+                    </section>
+
+                </form>
+
+
+                <!-- ABOUT -->
+                <section
+                    id="about"
+                    class="tf-settings-section"
+                >
+
+                    <div class="tf-settings-section-title">
+
+                        <span>04</span>
+
+                        <div>
+                            <h2>About</h2>
+                            <p>
+                                Information about TaskFlow.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="tf-settings-about">
+
+                        <div>
+
+                            <label>
+                                TASK MANAGEMENT
+                            </label>
+
+                            <h3>
+                                TaskFlow
+                            </h3>
+
+                            <p>
+                                A personal productivity workspace for
+                                managing tasks, priorities, deadlines
+                                and daily work.
+                            </p>
+
+                        </div>
+
+                        <span>
+                            Version 1.0
+                        </span>
+
+                    </div>
+
+                </section>
+
+
+                <!-- LOGOUT -->
+                <div class="tf-settings-logout">
+
+                    <div>
+
+                        <label>
+                            ACCOUNT
+                        </label>
+
+                        <strong>
+                            Sign out of TaskFlow
+                        </strong>
+
+                        <p>
+                            End your current session on this device.
+                        </p>
+
+                    </div>
+
+                    <a href="{{ url_for('logout') }}">
+                        Logout
+                    </a>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <footer class="tf-settings-footer">
+        TaskFlow · Personal productivity workspace
+    </footer>
+
+</body>
+</html>

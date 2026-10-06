@@ -1,0 +1,163 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Task - TaskFlow</title>
+
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+
+
+    <main class="app-container">
+
+        <div class="add-task-card">
+
+
+            <p class="welcome-text">
+                EDIT TASK
+            </p>
+
+
+            <h1>
+                Edit Task
+            </h1>
+
+
+            <form
+                action="{{ url_for('edit_task', todo_id=todo['id'], from_calendar=1 if from_calendar else None) }}"
+                method="POST"
+                class="edit-form"
+            >
+
+
+                <div class="input-wrapper">
+
+                    <span class="input-icon">
+                        ✎
+                    </span>
+
+                    <input
+                        type="text"
+                        name="task"
+                        value="{{ todo['task'] }}"
+                        required
+                        autofocus
+                    >
+
+                </div>
+
+
+                <select
+                    name="priority"
+                    class="priority-select"
+                >
+
+                    <option
+                        value="high"
+                        {% if todo['priority'] == 'high' %}
+                            selected
+                        {% endif %}
+                    >
+                        🔴 High
+                    </option>
+
+
+                    <option
+                        value="medium"
+                        {% if todo['priority'] == 'medium' %}
+                            selected
+                        {% endif %}
+                    >
+                        🟡 Medium
+                    </option>
+
+
+                    <option
+                        value="low"
+                        {% if todo['priority'] == 'low' %}
+                            selected
+                        {% endif %}
+                    >
+                        🟢 Low
+                    </option>
+
+                </select>
+
+
+                <input
+                    type="date"
+                    name="due_date"
+                    class="date-input"
+                    value="{{ todo['due_date'] or '' }}"
+                >
+
+
+                <button
+                    type="submit"
+                    class="add-button"
+                >
+                    Save Changes
+                </button>
+
+
+            </form>
+
+
+            <div class="back-link-container">
+
+                <a
+                    href="{{ url_for('calendar') if from_calendar else url_for('home') }}"
+                    class="action-button complete-button"
+                >
+                    ← {{ "Back to Calendar" if from_calendar else "Back to Tasks" }}
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </main>
+
+
+</body>
+
+</html>
+

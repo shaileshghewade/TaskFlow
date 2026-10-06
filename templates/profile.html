@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Profile - TaskFlow</title>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+<body class="{% if user_settings and user_settings['theme'] == 'light' %}profile-theme-light{% else %}profile-theme-dark{% endif %}">
+
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+
+
+    <main class="profile-container">
+
+        <div class="profile-card">
+
+            <a
+                href="{{ url_for('home') }}"
+                class="profile-back"
+            >
+                ← Back to Dashboard
+            </a>
+
+
+            <div class="profile-avatar">
+                {{ current_user.username[0]|upper }}
+            </div>
+
+
+            <p class="welcome-text">
+                YOUR ACCOUNT
+            </p>
+
+            <h1>
+                {{ current_user.username }}
+            </h1>
+
+            <p class="profile-email">
+                {{ current_user.email }}
+            </p>
+
+
+            <div class="profile-divider"></div>
+
+
+            <div class="profile-stats">
+
+                <div class="profile-stat">
+
+                    <span>
+                        Total Tasks
+                    </span>
+
+                    <strong>
+                        {{ total_tasks }}
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-stat">
+
+                    <span>
+                        Completed
+                    </span>
+
+                    <strong>
+                        {{ completed_tasks }}
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-stat">
+
+                    <span>
+                        Active
+                    </span>
+
+                    <strong>
+                        {{ active_tasks }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-progress">
+
+                <div class="profile-progress-header">
+
+                    <span>
+                        Completion Rate
+                    </span>
+
+                    <strong>
+                        {{ completion_percentage }}%
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-progress-track">
+
+                    <div
+                        class="profile-progress-bar"
+                        data-progress="{{ completion_percentage }}"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-edit-section">
+
+                <div class="profile-edit-heading">
+                    <span>ACCOUNT DETAILS</span>
+                    <h2>Edit Profile</h2>
+                    <p>Update your username and email address.</p>
+                </div>
+            
+                <form method="POST" class="profile-edit-form">
+                
+                    <div class="profile-form-group">
+                        <label for="username">Username</label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            value="{{ user['username'] }}"
+                            autocomplete="username"
+                            required
+                        >
+                    </div>
+                
+                    <div class="profile-form-group">
+                        <label for="email">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="{{ user['email'] }}"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+                
+                    <button type="submit" class="profile-save-button">
+                        Save Changes
+                    </button>
+                
+                </form>
+
+            </div>
+
+            <div class="profile-password-section">
+
+                <div class="profile-edit-heading">
+                    <span>SECURITY</span>
+                    <h2>Change Password</h2>
+                    <p>Update your account password securely.</p>
+                </div>
+            
+                <form
+                    method="POST"
+                    action="{{ url_for('change_password') }}"
+                    class="profile-password-form"
+                >
+            
+                    <div class="profile-form-group">
+                        <label for="current_password">Current Password</label>
+                    
+                        <input
+                            type="password"
+                            id="current_password"
+                            name="current_password"
+                            autocomplete="current-password"
+                            required
+                        >
+                    </div>
+                
+                    <div class="profile-form-group">
+                        <label for="new_password">New Password</label>
+                    
+                        <input
+                            type="password"
+                            id="new_password"
+                            name="new_password"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+                
+                    <div class="profile-form-group">
+                        <label for="confirm_password">Confirm New Password</label>
+                    
+                        <input
+                            type="password"
+                            id="confirm_password"
+                            name="confirm_password"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+                
+                    <button type="submit" class="profile-password-button">
+                        Change Password
+                    </button>
+                
+                </form>
+
+            </div>
+
+            <div class="profile-actions">
+                <a href="{{ url_for('home') }}" class="profile-action primary">
+                    View My Tasks
+                </a>
+            
+                <a href="{{ url_for('logout') }}" class="profile-action secondary">
+                    Logout
+                </a>
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        document
+            .querySelectorAll(".profile-progress-bar")
+            .forEach(function (bar) {
+
+                const progress =
+                    Number(bar.dataset.progress) || 0;
+
+                bar.style.width =
+                    Math.min(100, Math.max(0, progress)) + "%";
+
+            });
+
+    </script>
+
+</body>
+
+</html>

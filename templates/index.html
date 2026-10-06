@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TaskFlow - Todo App</title>
+
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body class="{% if user_settings and user_settings['theme'] == 'light' %}dashboard-theme-light{% else %}dashboard-theme-dark{% endif %}">
+
+    <div class="background-glow glow-one"></div>
+
+    <div class="background-glow glow-two"></div>
+
+
+    <main class="app-container">
+
+        <div class="user-bar">
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ current_user.username[0]|upper }}
+                </div>
+            
+                <div>
+                    <span class="user-label">Logged in as</span>
+                    <strong>{{ current_user.username }}</strong>
+                </div>
+            </div>
+        
+            <div class="user-actions">
+                <a href="{{ url_for('home') }}" class="profile-button">Tasks</a>
+            
+                <a href="{{ url_for('calendar') }}" class="profile-button">Calendar</a>
+            
+                <a href="{{ url_for('profile') }}" class="profile-button">Profile</a>
+            
+                <a href="{{ url_for('settings') }}" class="profile-button">Settings</a>
+            
+                <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
+            </div>
+        </div>
+
+
+        <!-- Header -->
+
+        <header class="app-header">
+
+            <div>
+
+                <p class="welcome-text">
+                    STAY ORGANIZED
+                </p>
+
+                <h1>
+                    My Tasks
+                    <span>✦</span>
+                </h1>
+
+                <p class="subtitle">
+                    Focus on what matters and get things done.
+                </p>
+
+            </div>
+
+
+            <div class="task-count">
+
+                <strong>
+                    {{ todos|length }}
+                </strong>
+
+                <span>
+                    Total Tasks
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <!-- Add Task -->
+
+        <section class="add-task-card">
+
+            <form
+                action="/add"
+                method="POST"
+                class="todo-form"
+            >
+
+                <div class="input-wrapper">
+
+                    <span class="input-icon">
+                        ＋
+                    </span>
+
+                    <input
+                        type="text"
+                        name="task"
+                        placeholder="What needs to be done?"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <select name="priority" class="priority-select">
+                    <option value="high" {% if user_settings and user_settings['default_priority'] == 'high' %}selected{% endif %}>
+                        🔴 High
+                    </option>
+                
+                    <option value="medium" {% if not user_settings or user_settings['default_priority'] == 'medium' %}selected{% endif %}>
+                        🟡 Medium
+                    </option>
+                
+                    <option value="low" {% if user_settings and user_settings['default_priority'] == 'low' %}selected{% endif %}>
+                        🟢 Low
+                    </option>
+                </select>
+
+
+                <input
+                    type="date"
+                    name="due_date"
+                    class="date-input"
+                    min="{{ today }}"
+                >
+
+
+                <button
+                    type="submit"
+                    class="add-button"
+                >
+                    Add Task
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- Dashboard -->
+
+        <section class="dashboard">
+
+
+            <!-- Total -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon total-icon">
+                    ◉
+                </div>
+
+                <div>
+
+                    <span class="stat-label">
+                        Total
+                    </span>
+
+                    <strong>
+                        {{ total_tasks }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- Completed -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon completed-icon">
+                    ✓
+                </div>
+
+                <div>
+
+                    <span class="stat-label">
+                        Completed
+                    </span>
+
+                    <strong>
+                        {{ completed_tasks }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- Active -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon active-icon">
+                    ◌
+                </div>
+
+                <div>
+
+                    <span class="stat-label">
+                        Active
+                    </span>
+
+                    <strong>
+                        {{ active_tasks }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- Overdue -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon overdue-icon">
+                    !
+                </div>
+
+                <div>
+
+                    <span class="stat-label">
+                        Overdue
+                    </span>
+
+                    <strong>
+                        {{ overdue_tasks }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- Progress -->
+
+        <section class="progress-card">
+
+            <div class="progress-header">
+
+                <div>
+
+                    <h3>
+                        Overall Progress
+                    </h3>
+
+                    <p>
+                        {{ completed_tasks }}
+                        of
+                        {{ total_tasks }}
+                        tasks completed
+                    </p>
+
+                </div>
+
+
+                <strong class="progress-percentage">
+                    {{ completion_percentage }}%
+                </strong>
+
+            </div>
+
+
+            <div class="progress-track">
+
+                <div
+                    class="progress-bar"
+                    data-progress="{{ completion_percentage }}"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Tasks -->
+
+        <section class="tasks-card">
+
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Your Tasks
+                    </h2>
+
+                    <p>
+                        Keep moving forward.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Search -->
+
+            <div class="search-wrapper">
+
+                <span class="search-icon">
+                    🔎
+                </span>
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search your tasks..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <!-- Filters -->
+
+            <div class="filter-buttons">
+
+                <button
+                    type="button"
+                    class="filter-button active"
+                    data-filter="all"
+                >
+                    All
+                </button>
+
+
+                <button
+                    type="button"
+                    class="filter-button"
+                    data-filter="active"
+                >
+                    Active
+                </button>
+
+
+                <button
+                    type="button"
+                    class="filter-button"
+                    data-filter="completed"
+                >
+                    Completed
+                </button>
+
+
+                <button
+                    type="button"
+                    class="filter-button"
+                    data-filter="high"
+                >
+                    🔴 High
+                </button>
+
+
+                <button
+                    type="button"
+                    class="filter-button"
+                    data-filter="overdue"
+                >
+                    ⚠ Overdue
+                </button>
+
+            </div>
+
+
+            {% if todos %}
+
+
+                <div class="task-list">
+
+
+                    {% for todo in todos %}
+
+
+                        <div
+                            class="
+                                task-item
+                                {% if todo['done'] %}completed{% endif %}
+                                {% if todo['due_date'] and todo['due_date'] < today and not todo['done'] %}overdue{% endif %}
+                            "
+                        >
+
+
+                            <div class="task-content">
+
+
+                                <div class="task-status">
+
+                                    {% if todo['done'] %}
+
+                                        ✓
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="task-details">
+
+
+                                    <span class="task-text">
+
+                                        {{ todo['task'] }}
+
+                                    </span>
+
+
+                                    <div class="task-meta">
+
+
+                                        <span
+                                            class="priority-badge priority-{{ todo['priority'] }}"
+                                        >
+
+                                            {% if todo['priority'] == 'high' %}
+
+                                                🔴 High
+
+                                            {% elif todo['priority'] == 'medium' %}
+
+                                                🟡 Medium
+
+                                            {% else %}
+
+                                                🟢 Low
+
+                                            {% endif %}
+
+                                        </span>
+
+
+                                        {% if todo['due_date'] %}
+
+
+                                            <span class="due-date">
+
+                                                📅 {{ todo['due_date'] }}
+
+
+                                                {% if todo['due_date'] < today and not todo['done'] %}
+
+                                                    <span class="overdue-text">
+                                                        • Overdue
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </span>
+
+
+                                        {% endif %}
+
+
+                                    </div>
+
+
+                                </div>
+
+
+                            </div>
+
+
+                            <div class="actions">
+
+
+                                <a
+                                    href="{{ url_for('complete_task', todo_id=todo['id']) }}"
+                                    class="action-button complete-button"
+                                >
+
+                                    {% if todo['done'] %}
+
+                                        Undo
+
+                                    {% else %}
+
+                                        Complete
+
+                                    {% endif %}
+
+                                </a>
+
+
+                                <a
+                                    href="{{ url_for('edit_task', todo_id=todo['id']) }}"
+                                    class="action-button edit-button"
+                                >
+                                    Edit
+                                </a>
+
+
+                                <a
+                                    href="{{ url_for('delete_task', todo_id=todo['id']) }}"
+                                    class="action-button delete-button"
+                                    onclick="return confirm('Delete this task?')"
+                                >
+                                    Delete
+                                </a>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    {% endfor %}
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        ✓
+                    </div>
+
+                    <h3>
+                        No tasks yet
+                    </h3>
+
+                    <p>
+                        Add your first task and start being productive.
+                    </p>
+
+                </div>
+
+
+            {% endif %}
+
+
+        </section>
+
+
+        <!-- Footer -->
+
+        <footer>
+
+            <span>
+                TaskFlow
+            </span>
+
+            <span>
+                •
+            </span>
+
+            <span>
+                Built with Flask
+            </span>
+
+        </footer>
+
+
+    </main>
+
+
+    <script
+        src="{{ url_for('static', filename='js/script.js') }}"
+    ></script>
+
+
+</body>
+
+</html>
